@@ -5,6 +5,7 @@ import io.restassured.http.Method;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
+import utils.Utils.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,12 +21,13 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.Method.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static utils.Utils.fillTextArray;
 
 
 public class TestYandexSpeller {
 
     @Test(description = "Simple request with mistake")
-    public void checkRequestWithoutMistakes() {
+    public void checkRequestWithMistakes() {
         List<List<YandexSpellerAnswer>> answers = YandexSpellerAPI.getYandexSpellerAnswers(
                 with()
                         .language(EN)
@@ -34,6 +36,7 @@ public class TestYandexSpeller {
         assertThat(answers.get(0).get(0).getS(), hasItem(TEXT_WITH_ERRORS.textsCorrect()));
     }
 
+    // this test falls because of incorrect work of Yandex Speller
     @Test(description = "Check repeated words error code")
     public void checkRepeatErrorCode() {
         List<List<YandexSpellerAnswer>> answers = YandexSpellerAPI.getYandexSpellerAnswers(
@@ -125,8 +128,9 @@ public class TestYandexSpeller {
 
     @Test(description = "Check if service POST responce fails due to long text with 414 error")
     public void checkPOSTResponceFails() {
-        given(YandexSpellerAPI.baseRequestConfiguration())
-                .params(PARAM_TEXT, TEXT_ARRAY)
+        RestAssured
+                .given(YandexSpellerAPI.baseRequestConfiguration())
+                .params(PARAM_TEXT, fillTextArray(TEXT_ARRAY))
                 .log().all()
                 .post().prettyPeek()
                 .then().specification(failedResponse());
